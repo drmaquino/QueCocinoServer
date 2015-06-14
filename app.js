@@ -108,6 +108,47 @@ app.get("/users/:mail", jsonParser, function(req, res) {
     });
 });
 
+// get session from db
+app.post("/sessions", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the documents collection
+            var collection = db.collection('users');
+
+            // Get user by email
+            collection.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, result) {
+                if (err) {
+                    console.log(err);
+                } else if (result.length) {
+                    console.log('Found:', result);
+
+                    // aca debería hashearlo!
+                    session = {mail: result[0]["mail"], session: "session_" + result[0]["mail"]}
+
+                    var sessions = db.collection('sessions');
+                    sessions.insert(session, function(err, result) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log('Inserted %d documents into the "sessions" collection. The documents inserted with "_id" are:', result.length, result);
+                        }
+                    })
+                    res.send(session);
+                } else {
+                    console.log('No document(s) found with defined "find" criteria!');
+                    res.sendStatus(401);
+                }
+                //Close connection
+                db.close();
+            })
+        }
+    });
+});
+
 // get all users in a group
 app.get("/users/group/:admin", jsonParser, function(req, res) {
     MongoClient.connect(url, function(err, db) {
