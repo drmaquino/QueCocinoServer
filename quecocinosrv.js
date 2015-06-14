@@ -125,86 +125,6 @@ app.get("/users/:mail", jsonParser, function(req, res) {
     });
 });
 
-//SESSIONS
-
-// get session from db
-app.post("/sessions", jsonParser, function(req, res) {
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.sendStatus(400);
-        } else {
-            console.log('Connection established to', url);
-            // Get the users collection
-            var users = db.collection('users');
-
-            // find user
-            users.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, result) {
-                if (err) {
-                    console.log(err);
-                } else if (result.length == 0) {
-                    console.log('No document(s) found with defined "find" criteria!');
-                    res.sendStatus(401);
-                } else {
-                    console.log('Found:', result);
-
-                    // Get the sessions collection
-                    var sessions = db.collection('sessions');
-                    //Create a session
-                    var session = {
-                        mail: req.body.mail,
-                        session: 'session_' + req.body.mail
-                    };
-                    // Insert session
-                    sessions.insert(session, function(err, result) {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log('Inserted: ', result);
-                        }
-                        //Close connection
-                        db.close();
-                    });
-                    // return session
-                    res.send(session);
-                }
-            });
-
-
-
-            // // Get the documents collection
-            // var collection = db.collection('users');
-
-            // // Get user by email
-            // collection.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, result) {
-            //     if (err) {
-            //         console.log(err);
-            //     } else if (result.length == 0) {
-            //         console.log('No document(s) found with defined "find" criteria!');
-            //         res.sendStatus(401);
-            //     } else {
-            //         console.log('Found:', result);
-
-            //         // aca debería hashearlo!
-            //         session = {mail: result[0]["mail"], session: "session_" + result[0]["mail"]}
-
-            //         var sessions = db.collection('sessions');
-            //         sessions.insert(session, function(err, result) {
-            //             if (err) {
-            //                 console.log(err);
-            //             } else {
-            //                 console.log('Inserted %d documents into the "sessions" collection. The documents inserted with "_id" are:', result.length, result);
-            //             }
-            //         })
-            //         res.send({session: session["session"], nick: result[0]["nick"]});
-            //     }
-            //     //Close connection
-            //     db.close();
-            // })
-        }
-    });
-});
-
 // get all users in a group
 app.get("/users/group/:admin", jsonParser, function(req, res) {
     MongoClient.connect(url, function(err, db) {
@@ -268,6 +188,54 @@ app.put(
         res.send(req.body); // echo the result back
     }
 );
+
+//SESSIONS
+
+// get session from db
+app.post("/sessions", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the users collection
+            var users = db.collection('users');
+
+            // find user
+            users.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, result) {
+                if (err) {
+                    console.log(err);
+                } else if (result.length == 0) {
+                    console.log('No document(s) found with defined "find" criteria!');
+                    res.sendStatus(401);
+                } else {
+                    console.log('Found:', result);
+
+                    // Get the sessions collection
+                    var sessions = db.collection('sessions');
+                    //Create a session
+                    var session = {
+                        mail: req.body.mail,
+                        session: 'session_' + req.body.mail
+                    };
+                    // Insert session
+                    sessions.insert(session, function(err, result) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log('Inserted: ', result);
+                        }
+                        //Close connection
+                        db.close();
+                    });
+                    // return session
+                    res.send(session);
+                }
+            });
+        }
+    });
+});
 
 app.listen(port);
 
