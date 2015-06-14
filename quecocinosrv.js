@@ -137,7 +137,7 @@ app.post("/sessions", jsonParser, function(req, res) {
                             console.log('Inserted %d documents into the "sessions" collection. The documents inserted with "_id" are:', result.length, result);
                         }
                     })
-                    res.send(session);
+                    res.send({session: session["session"], nick: result[0]["nick"]});
                 } else {
                     console.log('No document(s) found with defined "find" criteria!');
                     res.sendStatus(401);
