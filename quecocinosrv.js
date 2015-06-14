@@ -172,10 +172,10 @@ app.put(
                     // find and update user
                     collection.update(
                             { 'mail': req.body.mail },
-                            { '$set': { 'groupAdmin': req.body.admin } }, // req.query.admin } },
+                            { '$set': { 'groupAdmin': req.body.admin } },
                         function(err, object) {
                             if (err) {
-                                console.warn(err.message); // returns error if no matching object found
+                                console.warn(err.message);
                             } else {
                                 console.dir(object);
                             }
@@ -185,7 +185,7 @@ app.put(
                 }
             }
         );
-        res.send(req.body); // echo the result back
+        res.send(req.body);
     }
 );
 
@@ -240,4 +240,3 @@ app.post("/sessions", jsonParser, function(req, res) {
 app.listen(port);
 
 console.log("listening on port", port);
-
