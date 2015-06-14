@@ -230,7 +230,7 @@ app.post("/sessions", jsonParser, function(req, res) {
                         db.close();
                     });
                     // return session
-                    res.send(session);
+                    res.send({session: session["session"], mail: result[0]["mail"], nick: result[0]["nick"]});
                 }
             });
         }
