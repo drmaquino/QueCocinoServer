@@ -273,11 +273,11 @@ app.post("/invitations", jsonParser, function(req, res) {
                             console.log(err);
                         } else {
                             console.log('Inserted: ', result);
+                            res.sendStatus(200);
                         }
                         //Close connection
                         db.close();
                     });
-                    res.sendStatus(200);
                 }
             });
         }
