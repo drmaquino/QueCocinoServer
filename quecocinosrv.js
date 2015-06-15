@@ -306,16 +306,16 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
             var invitations = db.collection('invitations');
 
             // Get invitation by member
-            invitations.find({"member": req.params.member}).toArray(function(err, result) {
+            invitations.find({"member": req.params.member}).toArray(function(err, adminResult) {
                 if (err) {
                     console.log(err);
                 } else {
                     if (adminResult.length == 0) {
                        console.log('No invitation(s) found for given member');
                     } else {
-                        console.log('Found:', result);
+                        console.log('Found:', adminResult);
                     }
-                    res.send({invitations : result});
+                    res.send({invitations : adminResult});
                 }
                 //Close connection
                 db.close();
