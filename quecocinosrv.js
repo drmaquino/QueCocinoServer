@@ -55,7 +55,7 @@ app.post("/users", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserted: ', result);
+                            console.log('Inserted: ', result["result"]);
                         }
                         //Close connection
                         db.close();
@@ -226,7 +226,7 @@ app.post("/sessions", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserted: ', result);
+                            console.log('Inserted: ', result["result"]);
                         }
                         //Close connection
                         db.close();
@@ -291,7 +291,7 @@ app.post("/invitations", jsonParser, function(req, res) {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log('Inserted: ', result);
+                                    console.log('Inserted: ', result["result"]);
                                     res.send(invitation);
                                 }
                                 //Close connection
