@@ -144,7 +144,7 @@ app.get("/users/group/:admin", jsonParser, function(req, res) {
                     console.log('Found:', result);
                     res.send({members : result});
                 } else {
-                    console.log('No document(s) found with defined "find" criteria!');
+                    console.log('No user(s) found with given group admin');
                     res.send({});
                 }
                 //Close connection
