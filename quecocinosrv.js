@@ -237,7 +237,7 @@ app.post("/sessions", jsonParser, function(req, res) {
             });
         }
     });
-    console.log('finished PUT');
+    console.log('finished POST');
 });
 
 //INVITATIONS
