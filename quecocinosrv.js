@@ -173,12 +173,12 @@ app.put("/users", jsonParser, function(req, res) {
                         console.warn(err.message);
                     } else {
                         console.dir(object);
+                        res.send(req.body);
                     }
+                    db.close();
                 });
-                db.close();
             }
         });
-        res.send(req.body);
     }
 );
 
@@ -200,7 +200,7 @@ app.post("/sessions", jsonParser, function(req, res) {
                 if (err) {
                     console.log(err);
                 } else if (result.length == 0) {
-                    console.log('No document(s) found with defined "find" criteria!');
+                    console.log('No session(s) found with given email and pass');
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', result);
@@ -249,7 +249,7 @@ app.post("/invitations", jsonParser, function(req, res) {
                     console.log(err);
                 }
                 else if (memberResult.length == 0) {
-                    console.log('No document(s) found with defined "find" criteria!');
+                    console.log('No member(s) found with given email');
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', memberResult);
@@ -259,7 +259,7 @@ app.post("/invitations", jsonParser, function(req, res) {
                             console.log(err);
                         }
                         else if (adminResult.length == 0) {
-                            console.log('No document(s) found with defined "find" criteria!');
+                            console.log('No admin(s) found with given email');
                             res.sendStatus(401);
                         } else {
                             console.log('Found:', adminResult);
@@ -310,13 +310,16 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log('Found:', result);
+                    if (adminResult.length == 0) {
+                       console.log('No invitation(s) found for given member');
+                    } else {
+                        console.log('Found:', result);
+                    }
                     res.send({invitations : result});
-
-                    //Close connection
-                    db.close();
                 }
-            })
+                //Close connection
+                db.close();
+            });
         }
     });
 });
@@ -364,7 +367,6 @@ app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
             invitations.remove({"member": req.params.member, "admin.mail": req.params.admin}, function(err, result) {
                 if (err) {
                     console.log(err);
-                    res.sendStatus(500)
                 } else {
                     console.log(result);
                     res.send({"result":"ok"})
