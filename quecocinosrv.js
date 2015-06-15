@@ -20,6 +20,7 @@ var jsonParser = bodyParser.json()
 
 // add user to db
 app.post("/users", jsonParser, function(req, res) {
+    console.log('POST: add new user');
     MongoClient.connect(url, res, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -65,10 +66,12 @@ app.post("/users", jsonParser, function(req, res) {
             });
         }
     });
+console.log('finished POST');
 });
 
 // get all users
 app.get("/users", jsonParser, function(req, res) {
+    console.log('GET: all users');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -94,10 +97,12 @@ app.get("/users", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished GET');
 });
 
 // get user by email
 app.get("/users/:mail", jsonParser, function(req, res) {
+    console.log('GET: user by email');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -123,10 +128,12 @@ app.get("/users/:mail", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished GET');
 });
 
 // get all users in a group
 app.get("/users/group/:admin", jsonParser, function(req, res) {
+    console.log('GET: users in group');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -152,10 +159,12 @@ app.get("/users/group/:admin", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished GET');
 });
 
 // add user to group
 app.put("/users", jsonParser, function(req, res) {
+    console.log('PUT: group admin to user');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -165,27 +174,27 @@ app.put("/users", jsonParser, function(req, res) {
             // Get the documents collection
             var users = db.collection('users');
             // find and update user
-            users.update(
-                    { 'mail': req.body.mail },
-                    { '$set': { 'groupAdmin': req.body.admin } },
-                function(err, object) {
-                    if (err) {
-                        console.warn(err.message);
-                    } else {
-                        console.dir(object);
-                        res.send(req.body);
-                    }
-                    db.close();
-                });
-            }
-        });
-    }
-);
+            users.update({ 'mail': req.body.mail },
+                            { '$set': { 'groupAdmin': req.body.admin } },
+                            function(err, object) {
+                if (err) {
+                    console.warn(err.message);
+                } else {
+                    console.dir(object);
+                    res.send(req.body);
+                }
+                db.close();
+            });
+        }
+    });
+    console.log('finished PUT');
+});
 
 //SESSIONS
 
 // get session from db
 app.post("/sessions", jsonParser, function(req, res) {
+    console.log('POST: add and retrieve new session');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -228,12 +237,14 @@ app.post("/sessions", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished PUT');
 });
 
 //INVITATIONS
 
 // create an invitation
 app.post("/invitations", jsonParser, function(req, res) {
+    console.log('POST: add new invitation');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -292,10 +303,12 @@ app.post("/invitations", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished POST');
 });
 
 // get all invitations for a user
 app.get("/invitations/:member", jsonParser, function(req, res) {
+    console.log('GET: invitations by user');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -322,10 +335,12 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished GET');
 });
 
 // delete all invitations for a user
 app.delete("/invitations/:member", jsonParser, function(req, res) {
+    console.log('DELETE: invitations by member');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -349,11 +364,13 @@ app.delete("/invitations/:member", jsonParser, function(req, res) {
             })
         }
     });
+    console.log('finished DELETE');
 });
 
 
 // delete a specific invitacion
 app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
+    console.log('DELETE: invitation by member and admir');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -376,6 +393,7 @@ app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
             });
         }
     });
+    console.log('finished DELETE');
 });
 
 
