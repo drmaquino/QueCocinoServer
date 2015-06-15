@@ -338,6 +338,7 @@ app.delete("/invitations/:member", jsonParser, function(req, res) {
                     console.log(err);
                 } else {
                     console.log(result);
+                    res.send({result: "ok"})
 
                     //Close connection
                     db.close();
@@ -366,6 +367,7 @@ app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
                     res.sendStatus(500)
                 } else {
                     console.log(result);
+                    res.send({"result":"ok"})
                     //Close connection
                     db.close();
                 }
