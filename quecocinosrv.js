@@ -233,50 +233,35 @@ app.post("/sessions", jsonParser, function(req, res) {
 //INVITATIONS
 
 // create an invitation
-app.post("/invitations", jsonParser, function(req, res)
-{
-    MongoClient.connect(url, function(err, db)
-    {
-        if (err)
-        {
+app.post("/invitations", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
             res.sendStatus(400);
-        }
-        else
-        {
+        } else {
             console.log('Connection established to', url);
             // Get the users collection
             var users = db.collection('users');
 
             // find target member
-            users.find({mail: req.body.member}).toArray(function(err, memberResult)
-            {
-                if (err)
-                {
+            users.find({mail: req.body.member}).toArray(function(err, memberResult) {
+                if (err) {
                     console.log(err);
                 }
-                else if (memberResult.length == 0)
-                {
+                else if (memberResult.length == 0) {
                     console.log('No document(s) found with defined "find" criteria!');
                     res.sendStatus(401);
-                }
-                else
-                {
+                } else {
                     console.log('Found:', memberResult);
 
-                    users.find({mail: req.body.admin}).toArray(function(err, adminResult)
-                    {
-                        if (err)
-                        {
+                    users.find({mail: req.body.admin}).toArray(function(err, adminResult) {
+                        if (err) {
                             console.log(err);
                         }
-                        else if (adminResult.length == 0)
-                        {
+                        else if (adminResult.length == 0) {
                             console.log('No document(s) found with defined "find" criteria!');
                             res.sendStatus(401);
-                        }
-                        else
-                        {
+                        } else {
                             console.log('Found:', adminResult);
 
                             // Get the invitations collection
@@ -291,14 +276,10 @@ app.post("/invitations", jsonParser, function(req, res)
                                 member: req.body.member
                             };
                             // Insert invitation
-                            invitations.insert(invitation, function(err, result)
-                            {
-                                if (err)
-                                {
+                            invitations.insert(invitation, function(err, result) {
+                                if (err) {
                                     console.log(err);
-                                }
-                                else
-                                {
+                                } else {
                                     console.log('Inserted: ', result);
                                     res.send(invitation);
                                 }
