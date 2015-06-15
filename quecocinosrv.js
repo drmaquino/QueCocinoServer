@@ -284,7 +284,34 @@ app.post("/invitations", jsonParser, function(req, res) {
     });
 });
 
+// get all invitations for a user
+app.get("/invitations/:member", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the invitations collection
+            var invitations = db.collection('invitations');
 
+            // Get invitation by member
+            invitations.find({"member": req.params.member}).toArray(function(err, result) {
+                if (err) {
+                    console.log(err);
+                // } else if (result.length == 0) {
+                //     console.log('No document(s) found with defined "find" criteria!');
+                //     res.send({});
+                } else {
+                    console.log('Found:', result);
+                    res.send({invitations : result});
+                }
+                //Close connection
+                db.close();
+            })
+        }
+    });
+});
 
 
 app.listen(port);
