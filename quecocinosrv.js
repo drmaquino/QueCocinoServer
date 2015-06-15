@@ -175,12 +175,12 @@ app.put("/users", jsonParser, function(req, res) {
             var users = db.collection('users');
             // find and update user
             users.update({ 'mail': req.body.mail },
-                            { '$set': { 'groupAdmin': req.body.admin } },
-                            function(err, object) {
+                            { '$set': { 'groupAdmin': req.body.groupAdmin } },
+                            function(err, result) {
                 if (err) {
                     console.warn(err.message);
                 } else {
-                    console.dir(object);
+                    console.log(result["result"]);
                     res.send(req.body);
                 }
                 db.close();
