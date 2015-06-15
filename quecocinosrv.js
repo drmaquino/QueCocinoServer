@@ -321,6 +321,32 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
     });
 });
 
+// delete all invitations for a user
+app.delete("/invitations/:member", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the invitations collection
+            var invitations = db.collection('invitations');
+
+            // Get invitation by member
+            invitations.remove({"member": req.params.member}).toArray(function(err, result) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log('Found:', result);
+
+                    //Close connection
+                    db.close();
+                }
+            })
+        }
+    });
+});
+
 
 app.listen(port);
 
