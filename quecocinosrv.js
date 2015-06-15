@@ -330,29 +330,10 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
                     console.log(err);
                 } else {
                     console.log('Found:', result);
-                    // res.send({invitations : result});
-
-                    var users = db.collection('users');
-
-                    var usuarios = []
-                    for (var inv in result) {
-
-                        // Get user by email
-                        users.find({"mail": inv.admin}).toArray(function(err, result) {
-                            if (err) {
-                                console.log(err);
-                            } else if (result.length == 0) {
-                                console.log('No document(s) found with defined "find" criteria!');
-                            } else {
-                                console.log('Found:', result);
-                                usuarios.push(result[0])
-                            }
-                        });
-                    }
-                    res.send({"usuarios": usuarios})
+                    res.send({invitations : result});
 
                     //Close connection
-                    // db.close();
+                    db.close();
                 }
             })
         }
