@@ -75,19 +75,19 @@ app.get("/users", jsonParser, function(req, res) {
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
-            // Get the documents collection
+            // Get the users collection
             var users = db.collection('users');
 
-            // Get user by email
-            users.find({}).toArray(function(err, result) {
+            // Get all users
+            users.find().toArray(function(err, usersResult) {
                 if (err) {
                     console.log(err);
-                } else if (result.length) {
-                    console.log('Found:', result);
-                    res.send({members : result});
+                } else if (usersResult.length == 0) {
+                    console.log('No user(s) found');
+                    res.send({members : usersResult});
                 } else {
-                    console.log('No document(s) found with defined "find" criteria!');
-                    res.send({});
+                    console.log('Found:', usersResult);
+                    res.send({members : usersResult});
                 }
                 //Close connection
                 db.close();
@@ -96,7 +96,7 @@ app.get("/users", jsonParser, function(req, res) {
     });
 });
 
-// get user from db
+// get user by email
 app.get("/users/:mail", jsonParser, function(req, res) {
     MongoClient.connect(url, function(err, db) {
         if (err) {
@@ -115,7 +115,7 @@ app.get("/users/:mail", jsonParser, function(req, res) {
                     console.log('Found:', result);
                     res.send(result[0]);
                 } else {
-                    console.log('No document(s) found with defined "find" criteria!');
+                    console.log('No user(s) found with given email');
                     res.send({});
                 }
                 //Close connection
