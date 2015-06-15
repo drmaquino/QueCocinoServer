@@ -237,7 +237,52 @@ app.post("/sessions", jsonParser, function(req, res) {
     });
 });
 
+//INVITATIONS
 
+// create an invitation
+app.post("/invitations", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the users collection
+            var users = db.collection('users');
+
+            // find user
+            users.find({mail: req.body.member}).toArray(function(err, result) {
+                if (err) {
+                    console.log(err);
+                } else if (result.length == 0) {
+                    console.log('No document(s) found with defined "find" criteria!');
+                    res.sendStatus(401);
+                } else {
+                    console.log('Found:', result);
+
+                    // Get the invitations collection
+                    var invitations = db.collection('invitations');
+                    //Create a invitation
+                    var invitation = {
+                        admin: req.body.admin,
+                        member: req.body.member
+                    };
+                    // Insert invitation
+                    invitations.insert(invitation, function(err, result) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log('Inserted: ', result);
+                        }
+                        //Close connection
+                        db.close();
+                    });
+                    res.sendStatus(200);
+                }
+            });
+        }
+    });
+});
 
 app.listen(port);
 
