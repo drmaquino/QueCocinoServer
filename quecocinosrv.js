@@ -76,10 +76,10 @@ app.get("/users", jsonParser, function(req, res) {
         } else {
             console.log('Connection established to', url);
             // Get the documents collection
-            var collection = db.collection('users');
+            var users = db.collection('users');
 
             // Get user by email
-            collection.find({}).toArray(function(err, result) {
+            users.find({}).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
                 } else if (result.length) {
@@ -91,7 +91,7 @@ app.get("/users", jsonParser, function(req, res) {
                 }
                 //Close connection
                 db.close();
-            })
+            });
         }
     });
 });
@@ -105,10 +105,10 @@ app.get("/users/:mail", jsonParser, function(req, res) {
         } else {
             console.log('Connection established to', url);
             // Get the documents collection
-            var collection = db.collection('users');
+            var users = db.collection('users');
 
             // Get user by email
-            collection.find({mail: req.params.mail}).toArray(function(err, result) {
+            users.find({mail: req.params.mail}).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
                 } else if (result.length) {
@@ -120,7 +120,7 @@ app.get("/users/:mail", jsonParser, function(req, res) {
                 }
                 //Close connection
                 db.close();
-            })
+            });
         }
     });
 });
@@ -134,10 +134,10 @@ app.get("/users/group/:admin", jsonParser, function(req, res) {
         } else {
             console.log('Connection established to', url);
             // Get the documents collection
-            var collection = db.collection('users');
+            var users = db.collection('users');
 
             // Get user by email
-            collection.find({"groupAdmin": req.params.admin}).toArray(function(err, result) {
+            users.find({"groupAdmin": req.params.admin}).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
                 } else if (result.length) {
@@ -149,42 +149,35 @@ app.get("/users/group/:admin", jsonParser, function(req, res) {
                 }
                 //Close connection
                 db.close();
-            })
+            });
         }
     });
 });
 
 // add user to group
-app.put(
-    "/users",
-    jsonParser,
-    function(req, res) {
-        MongoClient.connect(
-            url,
-            function(err, db) {
-                if (err) {
-                    console.log('Unable to connect to the mongoDB server. Error:', err);
-                    res.sendStatus(400);
-                } else {
-                    console.log('Connection established to', url);
-                    // Get the documents collection
-                    var collection = db.collection('users');
-                    // find and update user
-                    collection.update(
-                            { 'mail': req.body.mail },
-                            { '$set': { 'groupAdmin': req.body.admin } },
-                        function(err, object) {
-                            if (err) {
-                                console.warn(err.message);
-                            } else {
-                                console.dir(object);
-                            }
-                        }
-                    );
-                    db.close();
-                }
+app.put("/users", jsonParser, function(req, res) {
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+            // Get the documents collection
+            var users = db.collection('users');
+            // find and update user
+            users.update(
+                    { 'mail': req.body.mail },
+                    { '$set': { 'groupAdmin': req.body.admin } },
+                function(err, object) {
+                    if (err) {
+                        console.warn(err.message);
+                    } else {
+                        console.dir(object);
+                    }
+                });
+                db.close();
             }
-        );
+        });
         res.send(req.body);
     }
 );
@@ -240,44 +233,79 @@ app.post("/sessions", jsonParser, function(req, res) {
 //INVITATIONS
 
 // create an invitation
-app.post("/invitations", jsonParser, function(req, res) {
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
+app.post("/invitations", jsonParser, function(req, res)
+{
+    MongoClient.connect(url, function(err, db)
+    {
+        if (err)
+        {
             console.log('Unable to connect to the mongoDB server. Error:', err);
             res.sendStatus(400);
-        } else {
+        }
+        else
+        {
             console.log('Connection established to', url);
             // Get the users collection
             var users = db.collection('users');
 
-            // find user
-            users.find({mail: req.body.member}).toArray(function(err, result) {
-                if (err) {
+            // find target member
+            users.find({mail: req.body.member}).toArray(function(err, memberResult)
+            {
+                if (err)
+                {
                     console.log(err);
-                } else if (result.length == 0) {
+                }
+                else if (memberResult.length == 0)
+                {
                     console.log('No document(s) found with defined "find" criteria!');
                     res.sendStatus(401);
-                } else {
-                    console.log('Found:', result);
+                }
+                else
+                {
+                    console.log('Found:', memberResult);
 
-                    // Get the invitations collection
-                    var invitations = db.collection('invitations');
-                    //Create a invitation
-                    var invitation = {
-                        admin: req.body.admin,
-                        member: req.body.member
-                    };
-                    // Insert invitation
-                    invitations.insert(invitation, function(err, result) {
-                        if (err) {
+                    users.find({mail: req.body.admin}).toArray(function(err, adminResult)
+                    {
+                        if (err)
+                        {
                             console.log(err);
-                        } else {
-                            console.log('Inserted: ', result);
-                            //res.sendStatus(200);
-                            res.send(invitation);
                         }
-                        //Close connection
-                        db.close();
+                        else if (adminResult.length == 0)
+                        {
+                            console.log('No document(s) found with defined "find" criteria!');
+                            res.sendStatus(401);
+                        }
+                        else
+                        {
+                            console.log('Found:', adminResult);
+
+                            // Get the invitations collection
+                            var invitations = db.collection('invitations');
+                            //Create a invitation
+                            var admin = {
+                                mail: adminResult[0].mail,
+                                nick: adminResult[0].nick
+                            }
+                            var invitation = {
+                                admin: admin,
+                                member: req.body.member
+                            };
+                            // Insert invitation
+                            invitations.insert(invitation, function(err, result)
+                            {
+                                if (err)
+                                {
+                                    console.log(err);
+                                }
+                                else
+                                {
+                                    console.log('Inserted: ', result);
+                                    res.send(invitation);
+                                }
+                                //Close connection
+                                db.close();
+                            });
+                        }
                     });
                 }
             });
@@ -300,15 +328,32 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
             invitations.find({"member": req.params.member}).toArray(function(err, result) {
                 if (err) {
                     console.log(err);
-                // } else if (result.length == 0) {
-                //     console.log('No document(s) found with defined "find" criteria!');
-                //     res.send({});
                 } else {
                     console.log('Found:', result);
-                    res.send({invitations : result});
+                    // res.send({invitations : result});
+
+                    var users = db.collection('users');
+
+                    var usuarios = []
+                    for (var inv in result) {
+
+                        // Get user by email
+                        users.find({"mail": inv.admin}).toArray(function(err, result) {
+                            if (err) {
+                                console.log(err);
+                            } else if (result.length == 0) {
+                                console.log('No document(s) found with defined "find" criteria!');
+                            } else {
+                                console.log('Found:', result);
+                                usuarios.push(result[0])
+                            }
+                        });
+                    }
+                    res.send({"usuarios": usuarios})
+
+                    //Close connection
+                    // db.close();
                 }
-                //Close connection
-                db.close();
             })
         }
     });
