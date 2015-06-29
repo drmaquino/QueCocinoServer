@@ -387,7 +387,7 @@ app.delete("/invitations", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log("Deleting invitation:", result["result"]);
+                            console.log("Deleting invitation:", "member:"+sessionsFound[0]["mail"], "admin:"+req.body.mail, result["result"]);
                             res.send(result["result"])
                             //Close connection
                             db.close();
