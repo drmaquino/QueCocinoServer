@@ -331,9 +331,22 @@ app.put("/users", jsonParser, function(req, res) {
                             console.log(err);
                         } else {
                             console.log(result["result"]);
-                            res.send(req.body);
+
+                            // Get the invitations collection
+                            var invitations = db.collection('invitations');
+
+                            // Get invitation by member
+                            invitations.delete({"member": sessionsFound[0]["mail"], "groupAdmin": req.body.mail}).toArray(function(err, invitationsFound) {
+                                if (err) {
+                                    console.log(err);
+                                } else if (invitationsFound.length == 0) {
+                                    console.log('No invitation(s) found for given member');
+                                } else {
+                                    console.log('deleted:', invitationsFound);
+                                }
+                                db.close();
+                            });
                         }
-                        db.close();
                     });
                 }
             });
