@@ -336,13 +336,13 @@ app.put("/users", jsonParser, function(req, res) {
                             var invitations = db.collection('invitations');
 
                             // Get invitation by member
-                            invitations.remove({"member": sessionsFound[0]["mail"], "admin.mail": req.body.mail}).toArray(function(err, invitationsFound) {
+                            invitations.remove({"member": sessionsFound[0]["mail"], "admin.mail": req.body.mail}, function(err, result) {
                                 if (err) {
                                     console.log(err);
-                                } else if (invitationsFound.length == 0) {
+                                } else if (result.length == 0) {
                                     console.log('No invitation(s) found for given member');
                                 } else {
-                                    console.log('deleted:', invitationsFound);
+                                    console.log('deleted:', result);
                                 }
                                 db.close();
                             });
