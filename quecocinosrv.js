@@ -336,7 +336,7 @@ app.put("/users", jsonParser, function(req, res) {
                             var invitations = db.collection('invitations');
 
                             // Get invitation by member
-                            invitations.delete({"member": sessionsFound[0]["mail"], "groupAdmin": req.body.mail}).toArray(function(err, invitationsFound) {
+                            invitations.remove({"member": sessionsFound[0]["mail"], "admin.mail": req.body.mail}).toArray(function(err, invitationsFound) {
                                 if (err) {
                                     console.log(err);
                                 } else if (invitationsFound.length == 0) {
