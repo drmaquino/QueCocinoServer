@@ -16,9 +16,15 @@ var jsonParser = bodyParser.json()
 
 /* routes */
 
-//USERS
-
-// add user to db
+// REGISTER
+// create user
+// expects:
+// BODY:
+// {
+//   "mail":"mariano@gmail.com",
+//   "pass":"123456",
+//   "nick":"Mariano"
+// }
 app.post("/users", jsonParser, function(req, res) {
     console.log('POST: add new user');
     MongoClient.connect(url, res, function(err, db) {
@@ -41,7 +47,7 @@ app.post("/users", jsonParser, function(req, res) {
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log('Inserted: ', result);
+                    console.log('Inserting User: ', result["result"]);
 
                     // Get the sessions collection
                     var sessions = db.collection('sessions');
@@ -55,7 +61,7 @@ app.post("/users", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserted: ', result["result"]);
+                            console.log('Inserting Session: ', result["result"]);
                         }
                         //Close connection
                         db.close();
@@ -66,133 +72,17 @@ app.post("/users", jsonParser, function(req, res) {
             });
         }
     });
-console.log('finished POST');
+    console.log('finished POST');
 });
 
-// get all users
-app.get("/users", jsonParser, function(req, res) {
-    console.log('GET: all users');
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.sendStatus(400);
-        } else {
-            console.log('Connection established to', url);
-            // Get the users collection
-            var users = db.collection('users');
-
-            // Get all users
-            users.find().toArray(function(err, usersResult) {
-                if (err) {
-                    console.log(err);
-                } else if (usersResult.length == 0) {
-                    console.log('No user(s) found');
-                    res.send({members : usersResult});
-                } else {
-                    console.log('Found:', usersResult);
-                    res.send({members : usersResult});
-                }
-                //Close connection
-                db.close();
-            });
-        }
-    });
-    console.log('finished GET');
-});
-
-// get user by email
-app.get("/users/:mail", jsonParser, function(req, res) {
-    console.log('GET: user by email');
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.sendStatus(400);
-        } else {
-            console.log('Connection established to', url);
-            // Get the documents collection
-            var users = db.collection('users');
-
-            // Get user by email
-            users.find({mail: req.params.mail}).toArray(function(err, result) {
-                if (err) {
-                    console.log(err);
-                } else if (result.length) {
-                    console.log('Found:', result);
-                    res.send(result[0]);
-                } else {
-                    console.log('No user(s) found with given email');
-                    res.send({});
-                }
-                //Close connection
-                db.close();
-            });
-        }
-    });
-    console.log('finished GET');
-});
-
-// get all users in a group
-app.get("/users/group/:admin", jsonParser, function(req, res) {
-    console.log('GET: users in group');
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.sendStatus(400);
-        } else {
-            console.log('Connection established to', url);
-            // Get the documents collection
-            var users = db.collection('users');
-
-            // Get user by email
-            users.find({"groupAdmin": req.params.admin}).toArray(function(err, result) {
-                if (err) {
-                    console.log(err);
-                } else if (result.length) {
-                    console.log('Found:', result);
-                    res.send({members : result});
-                } else {
-                    console.log('No user(s) found with given group admin');
-                    res.send({});
-                }
-                //Close connection
-                db.close();
-            });
-        }
-    });
-    console.log('finished GET');
-});
-
-// add user to group
-app.put("/users", jsonParser, function(req, res) {
-    console.log('PUT: group admin to user');
-    MongoClient.connect(url, function(err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.sendStatus(400);
-        } else {
-            console.log('Connection established to', url);
-            // Get the documents collection
-            var users = db.collection('users');
-            // find and update user
-            users.update({ 'mail': req.body.mail },
-                            { '$set': { 'groupAdmin': req.body.admin } },
-                            function(err, object) {
-                if (err) {
-                    console.warn(err.message);
-                } else {
-                    console.dir(object);
-                    res.send(req.body);
-                }
-                db.close();
-            });
-        }
-    });
-    console.log('finished PUT');
-});
-
-//SESSIONS
-
-// get session from db
+// LOGIN
+// create session
+// expects:
+// BODY:
+// {
+//   "mail":"mariano@gmail.com",
+//   "pass":"123456"
+// }
 app.post("/sessions", jsonParser, function(req, res) {
     console.log('POST: add and retrieve new session');
     MongoClient.connect(url, function(err, db) {
@@ -205,14 +95,14 @@ app.post("/sessions", jsonParser, function(req, res) {
             var users = db.collection('users');
 
             // find user
-            users.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, result) {
+            users.find({mail: req.body.mail, pass: req.body.pass}).toArray(function(err, usersFound) {
                 if (err) {
                     console.log(err);
-                } else if (result.length == 0) {
+                } else if (usersFound.length == 0) {
                     console.log('No session(s) found with given email and pass');
                     res.sendStatus(401);
                 } else {
-                    console.log('Found:', result);
+                    console.log('Found:', usersFound);
 
                     // Get the sessions collection
                     var sessions = db.collection('sessions');
@@ -226,13 +116,13 @@ app.post("/sessions", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserted: ', result["result"]);
+                            console.log('Inserting Session: ', result["result"]);
                         }
                         //Close connection
                         db.close();
                     });
                     // return session
-                    res.send({session: session["session"], mail: result[0]["mail"], nick: result[0]["nick"]});
+                    res.send({session: session["session"], mail: usersFound[0]["mail"], nick: usersFound[0]["nick"]});
                 }
             });
         }
@@ -240,62 +130,77 @@ app.post("/sessions", jsonParser, function(req, res) {
     console.log('finished POST');
 });
 
-//INVITATIONS
-
+// SEND AN INVITATION
 // create an invitation
-app.post("/invitations", jsonParser, function(req, res) {
-    console.log('POST: add new invitation');
+app.put("/invitations", jsonParser, function(req, res) {
+    console.log('PUT: add new invitation');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
-            // Get the users collection
-            var users = db.collection('users');
 
-            // find target member
-            users.find({mail: req.body.member}).toArray(function(err, memberResult) {
+            // Get the sessions collection
+            var sessions = db.collection('sessions');
+
+            // find session
+            sessions.find({session : req.headers.session}).toArray(function(err, sessionsFound) {
                 if (err) {
                     console.log(err);
-                }
-                else if (memberResult.length == 0) {
-                    console.log('No member(s) found with given email');
+                } else if (sessionsFound.length == 0) {
+                    console.log('No session(s) found with given email and pass');
                     res.sendStatus(401);
                 } else {
-                    console.log('Found:', memberResult);
+                    console.log('Found:', sessionsFound);
 
-                    users.find({mail: req.body.admin}).toArray(function(err, adminResult) {
+                    // Get the users collection
+                    var users = db.collection('users');
+
+                    // find target member
+                    users.find({mail: req.body.member}).toArray(function(err, memberResult) {
                         if (err) {
                             console.log(err);
                         }
-                        else if (adminResult.length == 0) {
-                            console.log('No admin(s) found with given email');
+                        else if (memberResult.length == 0) {
+                            console.log('No member(s) found with given email');
                             res.sendStatus(401);
                         } else {
-                            console.log('Found:', adminResult);
+                            console.log('Found:', memberResult);
 
-                            // Get the invitations collection
-                            var invitations = db.collection('invitations');
-                            //Create a invitation
-                            var admin = {
-                                mail: adminResult[0].mail,
-                                nick: adminResult[0].nick
-                            }
-                            var invitation = {
-                                admin: admin,
-                                member: req.body.member
-                            };
-                            // Insert invitation
-                            invitations.insert(invitation, function(err, result) {
+                            users.find({mail: sessionsFound[0]["mail"]}).toArray(function(err, adminResult) {
                                 if (err) {
                                     console.log(err);
-                                } else {
-                                    console.log('Inserted: ', result["result"]);
-                                    res.send(invitation);
                                 }
-                                //Close connection
-                                db.close();
+                                else if (adminResult.length == 0) {
+                                    console.log('No admin(s) found with given email');
+                                    res.sendStatus(401);
+                                } else {
+                                    console.log('Found:', adminResult);
+
+                                    // Get the invitations collection
+                                    var invitations = db.collection('invitations');
+                                    //Create a invitation
+                                    var admin = {
+                                        mail: adminResult[0].mail,
+                                        nick: adminResult[0].nick
+                                    }
+                                    var invitation = {
+                                        admin: admin,
+                                        member: req.body.member
+                                    };
+                                    // Insert invitation
+                                    invitations.insert(invitation, function(err, result) {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            console.log('Inserting Invitation: ', result["result"]);
+                                            res.send(invitation);
+                                        }
+                                        //Close connection
+                                        db.close();
+                                    });
+                                }
                             });
                         }
                     });
@@ -306,8 +211,9 @@ app.post("/invitations", jsonParser, function(req, res) {
     console.log('finished POST');
 });
 
+// SEE INVITATIONS
 // get all invitations for a user
-app.get("/invitations/:member", jsonParser, function(req, res) {
+app.get("/invitations", function(req, res) {
     console.log('GET: invitations by user');
     MongoClient.connect(url, function(err, db) {
         if (err) {
@@ -315,61 +221,91 @@ app.get("/invitations/:member", jsonParser, function(req, res) {
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
-            // Get the invitations collection
-            var invitations = db.collection('invitations');
 
-            // Get invitation by member
-            invitations.find({"member": req.params.member}).toArray(function(err, adminResult) {
+            // Get the sessions collection
+            var sessions = db.collection('sessions');
+
+            // find session
+            sessions.find({session : req.headers.session}).toArray(function(err, sessionsFound) {
                 if (err) {
                     console.log(err);
+                } else if (sessionsFound.length == 0) {
+                    console.log('No session(s) found with given email and pass');
+                    res.sendStatus(401);
                 } else {
-                    if (adminResult.length == 0) {
-                       console.log('No invitation(s) found for given member');
-                    } else {
-                        console.log('Found:', adminResult);
-                    }
-                    res.send({invitations : adminResult});
+                    console.log('Found:', sessionsFound);
+
+                    // Get the invitations collection
+                    var invitations = db.collection('invitations');
+
+                    // Get invitation by member
+                    invitations.find({"member": sessionsFound[0]["mail"]}).toArray(function(err, invitationsFound) {
+                        if (err) {
+                            console.log(err);
+                        } else if (invitationsFound.length == 0) {
+                            console.log('No invitation(s) found for given member');
+                        } else {
+                            console.log('Found:', invitationsFound);
+                            res.send({invitations : invitationsFound});
+                        }
+                        //Close connection
+                        db.close();
+                    });
                 }
-                //Close connection
-                db.close();
             });
         }
     });
     console.log('finished GET');
 });
 
-// delete all invitations for a user
-app.delete("/invitations/:member", jsonParser, function(req, res) {
-    console.log('DELETE: invitations by member');
+// ACCEPT INVITATION
+// add user to group
+app.put("/users", jsonParser, function(req, res) {
+    console.log('PUT: group admin to user');
     MongoClient.connect(url, function(err, db) {
         if (err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
-            // Get the invitations collection
-            var invitations = db.collection('invitations');
 
-            // Get invitation by member
-            invitations.remove({"member": req.params.member}, function(err, result) {
+            // Get the sessions collection
+            var sessions = db.collection('sessions');
+
+            // find session
+            sessions.find({session : req.headers.session}).toArray(function(err, sessionsFound) {
                 if (err) {
                     console.log(err);
+                } else if (sessionsFound.length == 0) {
+                    console.log('No session(s) found with given email and pass');
+                    res.sendStatus(401);
                 } else {
-                    console.log(result);
-                    res.send({result: "ok"})
+                    console.log('Found:', sessionsFound);
 
-                    //Close connection
-                    db.close();
+                    // Get the users collection
+                    var users = db.collection('users');
+                    // find and update user
+                    users.update({ 'mail': sessionsFound[0]["mail"]},
+                                    { '$set': { 'groupAdmin': req.body.mail } },
+                                    function(err, object) {
+                        if (err) {
+                            console.warn(err.message);
+                        } else {
+                            console.dir(object);
+                            res.send(req.body);
+                        }
+                        db.close();
+                    });
                 }
-            })
+            });
         }
     });
-    console.log('finished DELETE');
+    console.log('finished PUT');
 });
 
-
+// DELETE INVITATION
 // delete a specific invitacion
-app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
+app.delete("/invitations", jsonParser, function(req, res) {
     console.log('DELETE: invitation by member and admir');
     MongoClient.connect(url, function(err, db) {
         if (err) {
@@ -377,18 +313,34 @@ app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
-            // Get the invitations collection
-            var invitations = db.collection('invitations');
 
-            // Get invitation by member
-            invitations.remove({"member": req.params.member, "admin.mail": req.params.admin}, function(err, result) {
+            // Get the sessions collection
+            var sessions = db.collection('sessions');
+
+            // find session
+            sessions.find({session : req.headers.session}).toArray(function(err, sessionsFound) {
                 if (err) {
                     console.log(err);
+                } else if (sessionsFound.length == 0) {
+                    console.log('No session(s) found with given email and pass');
+                    res.sendStatus(401);
                 } else {
-                    console.log(result);
-                    res.send({"result":"ok"})
-                    //Close connection
-                    db.close();
+                    console.log('Found:', sessionsFound);
+
+                    // Get the invitations collection
+                    var invitations = db.collection('invitations');
+
+                    // Get invitation by admin and member
+                    invitations.remove({"member": sessionsFound[0]["mail"], "admin.mail": req.body.mail}, function(err, result) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(result);
+                            res.send("Deleting Invitation", result["result"])
+                            //Close connection
+                            db.close();
+                        }
+                    });
                 }
             });
         }
@@ -396,7 +348,135 @@ app.delete("/invitations/:member/:admin", jsonParser, function(req, res) {
     console.log('finished DELETE');
 });
 
+//SEE GROUP MEMBERS
+// get all users in a group
+app.get("/users/group/", jsonParser, function(req, res) {
+    console.log('GET: users in group');
+    MongoClient.connect(url, function(err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+            res.sendStatus(400);
+        } else {
+            console.log('Connection established to', url);
+
+            // Get the sessions collection
+            var sessions = db.collection('sessions');
+
+            // find session
+            sessions.find({session : req.headers.session}).toArray(function(err, sessionsFound) {
+                if (err) {
+                    console.log(err);
+                } else if (sessionsFound.length == 0) {
+                    console.log('No session(s) found with given email and pass');
+                    res.sendStatus(401);
+                } else {
+                    console.log('Found:', sessionsFound);
+
+                    // Get the users collection
+                    var users = db.collection('users');
+
+                    // Get user by groupAdmin
+                    users.find({"groupAdmin": req.params.admin}).toArray(function(err, usersFound) {
+                        if (err) {
+                            console.log(err);
+                        } else if (usersFound.length == 0) {
+                            console.log('No user(s) found with given group admin');
+                            res.send({});
+                        } else {
+                            console.log('Found:', usersFound);
+                            res.send({members : usersFound});
+                        }
+                        //Close connection
+                        db.close();
+                    });
+                }
+            });
+        }
+    });
+    console.log('finished GET');
+});
 
 app.listen(port);
 
 console.log("listening on port", port);
+
+// // delete all invitations for a user
+// app.delete("/invitations/:member", jsonParser, function(req, res) {
+//     console.log('DELETE: invitations by member');
+//     MongoClient.connect(url, function(err, db) {
+//         if (err) {
+//             console.log('Unable to connect to the mongoDB server. Error:', err);
+//             res.sendStatus(400);
+//         } else {
+//             console.log('Connection established to', url);
+//             // Get the invitations collection
+//             var invitations = db.collection('invitations');
+
+//             // Get invitation by member
+//             invitations.remove({"member": req.params.member}, function(err, result) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     console.log(result);
+//                     res.send({result: "ok"})
+
+//                     //Close connection
+//                     db.close();
+//                 }
+//             })
+//         }
+//     });
+//     console.log('finished DELETE');
+// });
+
+// // get user by session
+// app.get("/users", jsonParser, function(req, res) {
+//     console.log('GET: user by email');
+//     MongoClient.connect(url, function(err, db) {
+//         if (err) {
+//             console.log('Unable to connect to the mongoDB server. Error:', err);
+//             res.sendStatus(400);
+//         } else {
+//             console.log('Connection established to', url);
+
+//             // Get the sessions collection
+//             var sessions = db.collection('sessions');
+
+//             session = req.headers.session
+//             console.log(session)
+
+//             // Get session by session hash
+//             sessions.find({"session": session}).toArray(function(err, result) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else if (result.length == 0) {
+//                     console.log('No user(s) found with given group admin');
+//                     res.send({});
+//                 } else {
+//                     console.log('Found:', result);
+
+//                     mail = result[0]["mail"]
+
+//                     // Get the documents collection
+//                     var users = db.collection('users');
+
+//                     // Get user by email
+//                     users.find({'mail': mail}).toArray(function(err, result) {
+//                         if (err) {
+//                             console.log(err);
+//                         } else if (result.length == 0) {
+//                             console.log('No user(s) found with given email');
+//                             res.send({});
+//                         } else {
+//                             console.log('Found:', result);
+//                             res.send(result[0]);
+//                         }
+//                         //Close connection
+//                         db.close();
+//                     });
+//                 }
+//             });
+//         }
+//     });
+//     console.log('finished GET');
+// });
