@@ -230,7 +230,7 @@ app.get("/invitations", function(req, res) {
                 if (err) {
                     console.log(err);
                 } else if (sessionsFound.length == 0) {
-                    console.log('No session(s) found with given email and pass');
+                    console.log('No session(s) found', req.headers.session);
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', sessionsFound);
