@@ -61,7 +61,7 @@ app.post("/users", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserting Session: ', result["result"]);
+                            console.log('Inserting Session: ', session, result["result"]);
                         }
                         //Close connection
                         db.close();
@@ -116,7 +116,7 @@ app.post("/sessions", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserting Session: ', result["result"]);
+                            console.log('Inserting Session: ', session, result["result"]);
                         }
                         //Close connection
                         db.close();
@@ -231,8 +231,6 @@ app.get("/invitations", function(req, res) {
                     console.log(err);
                 } else if (sessionsFound.length == 0) {
                     console.log('No session(s) found', req.headers.session);
-                    console.log(req);
-                    console.log(req.headers);
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', sessionsFound);
@@ -289,11 +287,11 @@ app.put("/users", jsonParser, function(req, res) {
                     // find and update user
                     users.update({ 'mail': sessionsFound[0]["mail"]},
                                     { '$set': { 'groupAdmin': req.body.mail } },
-                                    function(err, object) {
+                                    function(err, result) {
                         if (err) {
-                            console.warn(err.message);
+                            console.log(err);
                         } else {
-                            console.dir(object);
+                            console.log(result["result"]);
                             res.send(req.body);
                         }
                         db.close();
@@ -337,8 +335,8 @@ app.delete("/invitations", jsonParser, function(req, res) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log(result);
-                            res.send("Deleting Invitation", result["result"])
+                            console.log("Deleting invitation:", result["result"]);
+                            res.send(result["result"])
                             //Close connection
                             db.close();
                         }
@@ -369,7 +367,7 @@ app.get("/users/group/", jsonParser, function(req, res) {
                 if (err) {
                     console.log(err);
                 } else if (sessionsFound.length == 0) {
-                    console.log('No session(s) found with given email and pass');
+                    console.log('No session(s) found', req.headers.session);
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', sessionsFound);
@@ -378,11 +376,11 @@ app.get("/users/group/", jsonParser, function(req, res) {
                     var users = db.collection('users');
 
                     // Get user by groupAdmin
-                    users.find({"groupAdmin": req.params.admin}).toArray(function(err, usersFound) {
+                    users.find({"groupAdmin": sessionsFound[0]["mail"]}).toArray(function(err, usersFound) {
                         if (err) {
                             console.log(err);
                         } else if (usersFound.length == 0) {
-                            console.log('No user(s) found with given group admin');
+                            console.log('No user(s) found with given group admin', sessionsFound[0]["mail"]);
                             res.send({});
                         } else {
                             console.log('Found:', usersFound);
