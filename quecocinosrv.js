@@ -33,41 +33,67 @@ app.post("/users", jsonParser, function(req, res) {
             res.sendStatus(400);
         } else {
             console.log('Connection established to', url);
+
             // Get the users collection
             var users = db.collection('users');
-            //Create a user
-            var user = {
-                mail: req.body.mail,
-                pass: req.body.pass,
-                nick: req.body.nick,
-                groupAdmin: req.body.mail
-            };
-            // Insert user
-            users.insert(user, function(err, result) {
+
+            // verify user does not exist
+            users.find({mail: req.body.mail}).toArray(function(err, usersFound) {
                 if (err) {
                     console.log(err);
+                } else if (usersFound.length != 0) {
+                    console.log('User found with same email.');
+                    res.sendStatus(409);
                 } else {
-                    console.log('Inserting User: ', result["result"]);
+                    console.log('mail is not used, proceed with creation.');
 
-                    // Get the sessions collection
-                    var sessions = db.collection('sessions');
-                    //Create a session
-                    var session = {
+                    //Create a user
+                    var user = {
                         mail: req.body.mail,
-                        session: 'session_' + req.body.mail
+                        pass: req.body.pass,
+                        nick: req.body.nick,
+                        groupAdmin: req.body.mail
                     };
-                    // Insert session
-                    sessions.insert(session, function(err, result) {
+                    // Insert user
+                    users.insert(user, function(err, result) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log('Inserting Session: ', session, result["result"]);
+                            console.log('Inserting User: ', result["result"]);
+
+                            // Get the sessions collection
+                            var sessions = db.collection('sessions');
+
+                            // check for existing sessions
+                            sessions.find({mail : req.body.mail}).toArray(function(err, sessionsFound) {
+                                if (err) {
+                                    console.log(err);
+                                } else if (sessionsFound.length > 0) {
+                                    console.log('returning existing session.');
+                                    res.send({session: session["session"], mail: req.body.mail, nick: req.body.nick});
+                                } else {
+                                    //Create a session
+                                    var session = {
+                                        mail: req.body.mail,
+                                        session: req.body.mail + (Math.random() * 1000).toFixed()
+                                    };
+
+                                    // Insert session
+                                    sessions.insert(session, function(err, result) {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            console.log('Inserting Session: ', session, result["result"]);
+                                        }
+                                        //Close connection
+                                        db.close();
+                                    });
+                                    // return session
+                                    res.send({session: session["session"], mail: req.body.mail, nick: req.body.nick});
+                                }
+                            });
                         }
-                        //Close connection
-                        db.close();
                     });
-                    // return session
-                    res.send(session);
                 }
             });
         }
@@ -99,30 +125,43 @@ app.post("/sessions", jsonParser, function(req, res) {
                 if (err) {
                     console.log(err);
                 } else if (usersFound.length == 0) {
-                    console.log('No session(s) found with given email and pass');
+                    console.log('No user(s) found with given email and pass');
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', usersFound);
 
                     // Get the sessions collection
                     var sessions = db.collection('sessions');
-                    //Create a session
-                    var session = {
-                        mail: req.body.mail,
-                        session: 'session_' + req.body.mail
-                    };
-                    // Insert session
-                    sessions.insert(session, function(err, result) {
+
+                    // check for existing sessions
+                    sessions.find({mail : req.body.mail}).toArray(function(err, sessionsFound) {
                         if (err) {
                             console.log(err);
+                        } else if (sessionsFound.length > 0) {
+                            console.log('returning existing session.');
+                            res.send({session: sessionsFound[0]["session"], mail: usersFound[0]["mail"], nick: usersFound[0]["nick"]});
                         } else {
-                            console.log('Inserting Session: ', session, result["result"]);
+
+                            //Create a session
+                            var session = {
+                                mail: req.body.mail,
+                                session: req.body.mail + (Math.random() * 1000).toFixed()
+                            };
+                            // Insert session
+                            sessions.insert(session, function(err, result) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log('Inserting Session: ', session, result["result"]);
+
+                                    // return session
+                                    res.send({session: session["session"], mail: usersFound[0]["mail"], nick: usersFound[0]["nick"]});
+                                }
+                                //Close connection
+                                db.close();
+                            });
                         }
-                        //Close connection
-                        db.close();
                     });
-                    // return session
-                    res.send({session: session["session"], mail: usersFound[0]["mail"], nick: usersFound[0]["nick"]});
                 }
             });
         }
