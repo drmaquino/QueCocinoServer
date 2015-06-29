@@ -231,6 +231,8 @@ app.get("/invitations", function(req, res) {
                     console.log(err);
                 } else if (sessionsFound.length == 0) {
                     console.log('No session(s) found', req.headers.session);
+                    console.log(req);
+                    console.log(req.headers);
                     res.sendStatus(401);
                 } else {
                     console.log('Found:', sessionsFound);
